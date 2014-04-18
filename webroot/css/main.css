@@ -1,0 +1,12 @@
+dl {
+  clear: both;
+}
+dl dt {
+  width: 40%;
+  float: left;
+  text-align: right;
+}
+dl dd {
+  width: 58%;
+  float: right;
+}
