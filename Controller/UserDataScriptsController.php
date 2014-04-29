@@ -5,7 +5,7 @@ App::uses("AwsAppController","Aws.Controller");
 class UserDataScriptsController extends AwsAppController {
 
 
-    public $uses = array("Aws.UserDataScript");
+    public $uses = array("Aws.AwsUserDataScript");
 
     /**
      * beforeFilter callback
@@ -57,7 +57,7 @@ class UserDataScriptsController extends AwsAppController {
 
     public function yum() {
 
-        $yum = $this->UserDataScript->available_yum_packages();
+        $yum = $this->AwsUserDataScript->available_yum_packages();
 
         $this->set(compact("yum"));
 

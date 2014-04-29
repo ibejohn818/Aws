@@ -14,9 +14,11 @@ class AwsSdk {
 
     private static $instanceTypes = false;
 
-    private function __construct() { }
+    private static $cloudWatchOperators = false;
 
+    private function __construct() { 
 
+    }
 
     public static function client($conf = 'default') {
 
@@ -37,6 +39,29 @@ class AwsSdk {
         }
 
         return self::$clients[$conf];
+
+    }
+
+
+    public static function getConfigs() {
+
+        $dir = AWS_PLUGIN_SDK_CONFIG_PATH;
+
+        $configs = array();
+
+        foreach(scandir($dir) as $file) {
+
+            if(in_array($file,array(".","..")) || pathinfo($file,PATHINFO_EXTENSION) != "yaml") {
+                continue;
+            }
+
+            $config = str_replace(".yaml","",$file);
+
+            $configs[$config] = $config; 
+
+        }
+
+        return $configs;
 
     }
 
@@ -72,6 +97,23 @@ class AwsSdk {
         }
 
         return self::$instanceTypes;
+
+    }
+
+    public static function getCloudWatchOperators() {
+
+        if(!self::$cloudWatchOperators) {
+
+            $r = array();
+
+            $cls = new ReflectionClass('Aws\CloudWatch\Enum\ComparisonOperator');
+
+            $constants = $cls->getConstants();
+
+            self::$cloudWatchOperators = $constants;
+        }
+
+        return self::$cloudWatchOperators;
 
     }
 

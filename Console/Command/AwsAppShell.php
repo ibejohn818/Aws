@@ -5,6 +5,9 @@ App::uses("AppShell","Console/Command");
 class AwsAppShell extends AppShell {
 
 
+    private $rsa_key_suffix = "-key";
+    private $rsa_tmp_path = TMP;
+
     public function __construct($stdout = null, $stderr = null, $stdin = null) {
 
         parent::__construct($stdout,$stderr,$stdin);
@@ -19,4 +22,44 @@ class AwsAppShell extends AppShell {
 
     }
 
+
+    protected function returnSSHLoginCmd($Ec2Login,$Ec2Instance,$privateIp = true) {
+
+        $privKey = $this->saveRsaKey("{$login['Ec2Login']['name']}-{$this->rsa_key_suffix}",$login['Ec2Login']['private_key']);
+        $pubKey = $this->saveRsaKey("{$login['Ec2Login']['name']}-{$this->rsa_key_suffix}.pub",$login['Ec2Login']['public_key']);
+
+        $ip = ($privateIp) ? $Ec2Instance['Ec2Instance']['private_ip']:$Ec2Instance['Ec2Instance']['public_ip'];
+
+        $cmd = "ssh -t -i $privKey {$Ec2Login['Ec2Login']['name']}@{$ip}";
+
+        return $cmd;
+
+    }
+
+    protected function saveRsaKey($name,$content,$chmod = 600) {
+
+        $fullPath = "{$this->rsa_tmp_path}/{$name}";
+
+        if(file_exists($fullPath)) {
+            return $fullPath;
+        }
+
+        file_put_contents($fullPath,$content);
+
+        chmod($fullPath,0600);
+
+        return $fullPath;
+
+    }
+
+    protected function deleteRsaKeys($Ec2Login) {
+        
+        $priv = "{$this->rsa_tmp_path}/{$Ec2Login['Ec2Login']['name']}-{$this->rsa_key_suffix}";
+        $pub = "{$this->rsa_tmp_path}/{$Ec2Login['Ec2Login']['name']}-{$this->rsa_key_suffix}.pub";
+
+        @unlink($priv);
+        @unlink($pub);
+
+    }
+    
 }

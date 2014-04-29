@@ -6,8 +6,13 @@ class AwsPluginLoad {
 
         if(!defined("AWS_PLUGIN_LOADED")) {
 
+            # import spyc YAML Library
             App::import('Aws.Vendor','Spyc');
+            #load SDK Helper
             App::import('Aws.Vendor','AwsSdk');
+            #add phpseclib to the include path
+            set_include_path(get_include_path().":".realpath(__DIR__."/../Vendor/phpseclib"));
+            
 
             //setup admin routing
             

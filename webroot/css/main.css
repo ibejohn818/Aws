@@ -10,3 +10,13 @@ dl dd {
   width: 58%;
   float: right;
 }
+/* 
+EC2 Index 
+*/
+#ec2-index span.label-info {
+  font-size: 15px;
+  margin-right: 5px;
+}
+#ec2-index span.label-info a {
+  color: #fff;
+}

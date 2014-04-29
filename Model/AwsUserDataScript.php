@@ -7,50 +7,11 @@ class AwsUserDataScript extends AwsAppModel {
 
 
 
-    public function parse_add_user($data) {
+    public function getLaunchScript($id) {
+            
+        return $this->findById($id);
 
-        $userDir = "/home/{$data['user_name']}";
-
-        $sshDir = "{$userDir}/.ssh";
-
-        $authKeyFile = "{$sshDir}/authorized_keys";
-
-        $knownHostsFile = "{$sshDir}/known_hosts";
-
-        $pubKeyFile = "{$sshDir}/id_rsa.pub";
-
-        $privKeyFile = "{$sshDir}/id_rsa";
-
-        $userBashCmd = "su {$data['user_name']} bash -c ";
-
-        $cmd = "useradd {$data['user_name']}; \n";
-
-        if($data['add_to_sudo']) {
-
-             $cmd .= "echo \"{$data['user_name']}   ALL=(ALL) NOPASSWD:ALL\" >> /etc/sudoers; \n";
-
-        }
-
-        $cmd .= "{$userBashCmd} 'mkdir {$sshDir} && chmod 600 {$sshDir} \n";
-
-        $cmd .= "{$userBashCmd} 'touch {$knownHostsFile}' \n";
-
-        $cmd .= "{$userBashCmd} 'touch {$pubKeyFile}' && chmod 600 {$pubKeyFile} \n";
-
-        $cmd .= "{$userBashCmd} 'touch {$privKeyFile}' && chmod 600 {$privKeyFile} \n";
-
-        //add public & private key
-        $cmd .= "echo \"{$data['public_key']}\" > {$pubKeyFile}; \n";
-        $cmd .= "echo \"{$data['private_key']}\" > {$privKeyFile}; \n";
-
-        
-        //add some sites to known_hosts
-        
-
-
-        return $cmd; 
-
-    }
+    }    
 
     public function available_yum_packages() {
 

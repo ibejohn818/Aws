@@ -6,14 +6,24 @@ echo $this->Form->create('UserDataScript',array(
 ));
 
  ?>
-<?php 
 
-$key = 0;
 
- ?>
-<fieldset>
-    <legend>Add Users</legend>
-    <?php echo $this->element("user-add-form",array("key"=>0)) ?>
-</fieldset>
-<button type="submit">Add</button>
+<div class="row">
+    <div class="col-md-8">
+        
+        <div class="row">
+            <div class="col-md-12">
+<pre>
+    yum update -y;
+</pre>
+
+            </div>
+        </div>
+
+    </div>
+    <div class="col-md-4">
+        
+    </div>
+</div>
+
 <?php echo $this->Form->end(); ?>

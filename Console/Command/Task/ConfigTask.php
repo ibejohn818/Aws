@@ -27,13 +27,20 @@ class ConfigTask extends AppShell {
 
             $this->hr();
 
-            $this->make_config_file();
+            return $this->make_config_file($this->defaultFileName);
+
         } elseif(count($this->config_files) === 1 && file_exists(AWS_PLUGIN_SDK_CONFIG_PATH . DS ."{$this->defaultFileName}.yaml")) {
+
             $this->config = $this->defaultFileName;
+
         } elseif(count($this->config_files)>1) {
+
             $this->listFiles();
+
         }
+
         $this->hr();
+
         $this->out("Using SDK Config: {$this->config} ....");
 
     }
@@ -45,7 +52,9 @@ class ConfigTask extends AppShell {
 
         $opt = array();
 
-        foreach($this->config_files as $file) {
+
+
+        foreach($this->config_files as $k=>$file) {
 
             $this->out("{$int}) {$file}");
             $opt[] = $int;
@@ -61,6 +70,8 @@ class ConfigTask extends AppShell {
 
 
     private function setConfigFiles() {
+
+        $this->config_files = array(); //reset
 
         foreach(scandir(AWS_PLUGIN_SDK_CONFIG_PATH) as $file) {
 
@@ -86,9 +97,30 @@ class ConfigTask extends AppShell {
 
     }
 
-    public function make_config_file() {
 
-        if(count($this->config_files)>=1) {
+    public function update_config() {
+
+        $int = 1;
+
+        $opt = array();
+
+        foreach($this->config_files as $file) {
+
+            $this->out("{$int}) {$file}");
+            $opt[] = $int;
+            $int++;
+
+        }
+
+        $file = $this->in("Select a configuration to update:",$opt);
+
+        $this->make_config_file($this->config_files[($file-1)]);
+
+    }
+
+    public function make_config_file($name = false) {
+
+        if(!$name) {
             
             $fileName = $this->in("Please enter a name for this configuration:");
 
@@ -100,7 +132,7 @@ class ConfigTask extends AppShell {
 
         } else {
 
-            $fileName = $this->defaultFileName;
+            $fileName = $name;
 
         }
 
