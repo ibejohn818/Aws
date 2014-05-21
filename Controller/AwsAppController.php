@@ -4,8 +4,6 @@ App::uses('AppController', 'Controller');
 
 class AwsAppController extends AppController {
 
-
-
     public function beforeFilter() {
 
         if(!defined('AWS_PLUGIN_LOADED')) {
@@ -17,7 +15,7 @@ class AwsAppController extends AppController {
         parent::beforeFilter();
 
         if(Configure::read("AwsPlugin.useAuth") === true) {
-            $this->Auth->deny();    
+            $this->Auth->deny();
         }
 
     }
