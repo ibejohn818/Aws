@@ -43,7 +43,7 @@ $eod = ((strtotime("tomorrow 00:00:00") - time()) / 60); //minutes until tomorro
 $prefix = gethostname()."-aws-";
 
 //trap for development machines etc.
-if(preg_match('/(centvm|anotherhost)/',gethostname())) {
+if(preg_match('/(centvm|ip-172-31-34-34|anotherhost)/',gethostname())) {
 
     $memcache_servers = array(
         '127.0.0.1:11211'
