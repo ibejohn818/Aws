@@ -1,0 +1,18 @@
+#ec2-index-options {
+  padding: 20px;
+  border-bottom: 1px solid #000;
+  margin-bottom: 15px;
+}
+#ec2-index {
+  padding: 10px;
+}
+.loading-div {
+  background: url(/aws/img/blk-px.png) center center repeat, url(/aws/img/ajax-loader.gif) center center no-repeat;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: 100000;
+  display: none;
+}

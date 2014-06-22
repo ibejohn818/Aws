@@ -1,96 +1,57 @@
 <?php 
 
-echo $this->element("scripts");
-
- ?>
+$this->Html->script(
+    array(
+        "Aws.ec2-index"
+    ),
+    array("inline"=>false)
+);
+$this->Html->css(
+    array(
+        "Aws.ec2-index"
+    ),
+    "stylesheet",
+    array("inline"=>false)
+);
+?>
 <div class="page-header">
-    <h2>
+    <h1>
         EC2 Instances
-    </h2>
+    </h1>
 </div>
 
-    
+<?php echo $this->element("nav-tabs") ?>
+
+<div id="ec2-index-options">
+    <?php 
+        $configs = ClassRegistry::init("Aws.AwsSdkConfig")->find('all');
+     ?>
+     <ul class='nav nav-pills dropdown'>
+         <li>
+             <a href="#" class='dropdown-toggle' rel='noAjax' data-toggle='dropdown'>
+                 Aws SDK Configurations <b class="caret"></b>
+             </a>
+             <ul class='dropdown-menu'>
+                <?php 
+                    foreach ($configs as $k => $config): 
+                        $configUrl = $this->Html->url(array(
+                            "action"=>"index",
+                            "aws_sdk_config_id"=>$config['AwsSdkConfig']['id']
+                        ));
+                ?>
+                <li>
+                    <a href="<?php echo $configUrl; ?>">
+                        <?php echo $config['AwsSdkConfig']['name']; ?>
+                    </a>
+                </li>
+                <?php endforeach ?>
+             </ul>
+         </li>
+     </ul>
+</div>
 <div id="ec2-index">
-    <table class="table table-stripped table-bordered table-hover" cellspacing="0">
-        <thead>
-            <tr>
-                <th>EC2 Instance ID</th>
-                <th>Name Tag</th>
-                <th>SDK Config</th>
-                <th>Instance State</th>
-                <th>Instance Type</th>
-                <th>Security Group(s)</th>
-                <th>Tags</th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($instances as $k => $instance):
-                $apiData = unserialize($instance['Ec2Instance']['serialized_api_data']);
-             ?>
-            <tr>
-                <td><?php echo $instance['Ec2Instance']['instance_id']; ?></td>
-                <td>
-                    <?php 
-                        $nameTag = Set::extract("/AwsTag[tag_key=Name]",$instance);
-                        if(count($nameTag)>0):
-                            foreach ($nameTag as $k => $v): ?>
-                               <?php echo $v['AwsTag']['tag_value']; ?>
-                            <?php
-                            endforeach;
-                        else:
-                     ?>
-                        No Name Tag
-                    <?php endif; ?>
-                </td>
-                <td><?php echo $instance['Ec2Instance']['sdk_config']; ?></td>
-                <td>
-                    <?php echo $instance['Ec2Instance']['instance_state']; ?>
-                </td>
-                <td><?php echo $apiData['InstanceType']; ?></td>
-                <td>
-                    <?php 
-                            foreach ($apiData['SecurityGroups'] as $group): 
-                                $url = $this->Html->url(array(
-                                    'action'=>'security_group',
-                                    'security_group_id'=>$group['GroupId'],
-                                    'config'=>$instance['Ec2Instance']['sdk_config']
-                                ));
-                    ?>
-
-                        <a href="<?php echo $url; ?>" class="btn btn-default btn-xs security-group-btn">
-                            <?php echo strtoupper($group['GroupName']); ?>
-                        </a>
-                    <?php endforeach ?>
-                </td>
-                <td>
-                    <?php foreach ((array)$instance['AwsTag'] as $key => $tag): ?>
-                        
-                            <?php 
-                                $url = $this->Html->url(array(
-                                    "TagKey"=>$tag['tag_key'],
-                                    "TagValue"=>$tag['tag_value']
-                                ));
-                             ?>
-                            <a class='btn btn-primary btn-xs' href='<?php echo $url; ?>'><?php echo $tag['tag_key'] ?> : <?php echo $tag['tag_value'] ?></a> &nbsp;
-                        
-                    <?php endforeach ?>
-                </td>
-                <td></td>
-                <td></td>
-                <td>
-                    <div class="btn-group">
-                        <a href="" class="btn btn-default">
-                            
-                        </a>
-                    </div>
-                </td>
-            </tr>
-            <?php endforeach ?>
-        </tbody>
-    </table>
+    <h4>
+        &nbsp;&nbsp;&nbsp;&nbsp;&#8593; Select an SDK config to view instances
+    </h4>
 </div>
-
-<?php pr($apiData); ?>
+<div class="loading-div"></div>

@@ -122,6 +122,7 @@ echo $this->Form->create('Ec2Login',array(
 <div class="row">
     <div class="col-md-12">
          <?php 
+            
             echo $this->Form->input("name");
             echo $this->Form->input("sudoer",array("label"=>"Sudoer <small>( Add User To Sudoers File )</small>"));
             echo $this->Form->input("known_hosts",array("label"=>"Known Hosts <i><small>( One Domain Per Line )</small></i>"));
@@ -131,23 +132,6 @@ echo $this->Form->create('Ec2Login',array(
              echo $this->Form->input("authorized_keys");
             
           ?>
-          <!--
-          <div class="row">
-              <div class="col-md-3">
-                  <?php 
-                    echo $this->Form->input("keyscan_host",array("label"=>"Host Name"));
-                   ?>
-              </div>
-              <div class="col-md-3">
-                <button class="btn btn-default" type="button" id='scan-host'>
-                    Scan Host
-                </button>
-              </div>
-              <div class="col-md-3"></div>
-              <div class="col-md-3"></div>
-          </div>
-            -->
-
     </div>
 </div>
 <div class="form-actions">

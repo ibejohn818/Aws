@@ -20,46 +20,30 @@ class AwsSdk {
 
     }
 
-    public static function client($conf = 'default') {
+    public static function client($config_id = false) {
 
-        if(!isset(self::$clients[$conf])) {
+        $configs = self::getConfigs();
 
-            if(!$conf || !file_exists(AWS_PLUGIN_SDK_CONFIG_PATH . '/' . $conf . ".yaml")) {
-                $conf = self::$defaultConfigFile;
-            }
-
-            $config = Spyc::YAMLLoad(AWS_PLUGIN_SDK_CONFIG_PATH . '/' . $conf . ".yaml");
-
-            if(!array_key_exists('key', $config) || !array_key_exists('secret', $config) || !array_key_exists('region', $config)) {
-                throw new AwsPluginConfigFileInvalidException("{$conf}.yaml File is invalid! Please run the aws.configure shell and create your AWS PHP SDK Configuration File");
-            }
-
-            self::$clients[$conf] = Aws::factory($config);
-
+        if(!$config_id) {
+            throw new Exception("Invalid SDK CONFIG ID");
         }
+        
+        $config = $configs[$config_id];
 
-        return self::$clients[$conf];
+        $conf = array(
+            'key'=>$config['AwsSdkConfig']['sdk_key'],
+            'secret'=>$config['AwsSdkConfig']['sdk_secret'],
+            'region'=>$config['AwsSdkConfig']['sdk_region']
+        );
+        
+        return Aws::factory($conf);
 
     }
 
 
     public static function getConfigs() {
 
-        $dir = AWS_PLUGIN_SDK_CONFIG_PATH;
-
-        $configs = array();
-
-        foreach(scandir($dir) as $file) {
-
-            if(in_array($file,array(".","..")) || pathinfo($file,PATHINFO_EXTENSION) != "yaml") {
-                continue;
-            }
-
-            $config = str_replace(".yaml","",$file);
-
-            $configs[$config] = $config; 
-
-        }
+        $configs = ClassRegistry::init("Aws.AwsSdkConfig")->getConfigs();
 
         return $configs;
 
@@ -79,6 +63,20 @@ class AwsSdk {
         }
 
         return self::$regions;
+
+    }
+
+    public static function regionsSelect() {
+
+        $regions = self::getRegions();
+
+        $s = array();
+
+        foreach($regions as $k=>$v) {
+            $s[$v] = "{$v} ({$k})";
+        }
+
+        return $s;
 
     }
 

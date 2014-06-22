@@ -14,6 +14,11 @@ class Ec2LaunchScript extends AwsAppModel {
     );
 
 
+    public function getLaunchScript() {
+
+        
+    }
+
     public function handleEdit($data) {
         
         $this->id = $data['Ec2LaunchScript']['id'];

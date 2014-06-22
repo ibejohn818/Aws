@@ -10,9 +10,8 @@ class UserDataController extends AwsAppController {
 
     public function beforeFilter() {
 
-       
-
         $this->Auth->authenticate = "Aws.UserData";
+
         AuthComponent::$sessionKey = false;
 
         $this->Auth->authorize = "Aws.UserData";

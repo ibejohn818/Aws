@@ -10,13 +10,23 @@ class Ec2Instance extends AwsAppModel {
         )
     );
 
+    public $belongsTo = array(
+        'AwsSdkConfig'=>array(
+            'className'=>'Aws.AwsSdkConfig'
+        ),
+        'AwsLaunchScript'=>array(
+            'className'=>'Aws.AwsLaunchScript'
+        )
+    );
 
 
-    public function api_queryInstances($config, $tags = array(), $xtra = array(), $noCache = false) {
+
+    public function api_queryInstances($sdk_config_id, $tags = array(), $xtra = array(), $cache = true) {
 
         $token = __CLASS__."-".__METHOD__."-".md5(serialize(func_get_args()));
+        $cacheConfig = 'aws-1min';
 
-        if(($results = Cache::read($token,"aws-1min")) === false || $noCache) {
+        if(($results = Cache::read($token,"aws-1min")) === false || !$cache) {
         
             $results = array();
 
@@ -36,7 +46,7 @@ class Ec2Instance extends AwsAppModel {
 
             $params = array_merge($params,$xtra);
 
-            $ec2 = AwsSdk::client($config)->get("ec2");
+            $ec2 = AwsSdk::client($sdk_config_id)->get("ec2");
 
             $res = $ec2->describeInstances($params);
 
@@ -48,13 +58,13 @@ class Ec2Instance extends AwsAppModel {
 
                 foreach($instances as $instance) {
 
-                    $results[] = $this->parseApiInstance($instance,$config);
+                    $results[] = $this->parseApiInstance($instance,$sdk_config_id);
 
                 }
 
             }
 
-            Cache::write($token,$results,"aws-1min");
+            Cache::write($token,$results,$cacheConfig);
 
         }
 
@@ -62,106 +72,85 @@ class Ec2Instance extends AwsAppModel {
 
     }
 
-    public function getInstances($options = array()) {
 
-        $this->syncApi();
 
-        if(isset($options['conditions'])) {
-            $conditions = $options['conditions'];
-        } else {
-            $conditions = array();
+   
+
+    public function syncInstances($sdk_config_id = false) {
+
+        if(
+            !$sdk_config_id || 
+            !(
+                $config = $this->AwsSdkConfig->find('first',array(
+                    'conditions'=>array(
+                        'AwsSdkConfig.id'=>$sdk_config_id
+                    ),
+                    'contain'=>false)
+                )
+            )
+        ) {
+            throw new BadRequestException("Invalid SDK Config ID",500);
         }
 
-        $instances = $this->find('all',array(
-            'contain'=>array("AwsTag"),
-            'conditions'=>$conditions
-        ));
-
-        return $instances;
-
-    }
-
-    private function insertInstance($ApiResult = array()) {
-
-        $chk = $this->find("first",array(
-            "fields"=>array("Ec2Instance.id"),
-            "conditions"=>array(
-                "instance_id"=>$ApiResult['instance_id']
+        $this->updateAll(
+            array(
+                "instance_state"=>"'unknown'"
             ),
-            "contain"=>false
-        ));
-
-        if(!isset($chk['Ec2Instance']['id'])) {
-
-            $this->create();
-            $this->save(array(
-               'instance_id'=>$ApiResult['instance_id']
-            ));
-            $id = $this->id;
-        
-        } else {
-
-            $id = $chk['Ec2Instance']['id'];
-
-        }
-
-        $udata = array(
-            'sdk_config'=>$ApiResult['sdk_config'],
-            'instance_state'=>$ApiResult['payload']['State']['Name'],
-            'serialized_api_data'=>serialize($ApiResult['payload'])
+            array(
+                "aws_sdk_config_id"=>$config['AwsSdkConfig']['id']
+            )
         );
 
-        $this->create();
+        $res = $this->api_queryInstances($config['AwsSdkConfig']['id'],array(),array());
 
-        $this->id = $id;
+        foreach($res as $instance) {
 
-        $this->save($udata);
-
-        $this->AwsTag->updateEc2Tags($id,$ApiResult['payload']['Tags']);
-
-    }
-
-    public function syncApi() {
-
-        $configs = AwsSdk::getConfigs();
-
-        foreach($configs as $config) {
-
-            $this->updateAll(
-                array(
-                    "instance_state"=>"'unknown'"
-                ),
-                array(
-                    "sdk_config"=>$config
-                )
-            );
-
-            $res = $this->api_queryInstances($config,array(),array());
-
-            foreach($res as $instance) {
-
-                $this->insertInstance($instance);
-
-            }
+            $this->insertInstance($instance);
 
         }
 
     }
 
-    public function parseApiInstance($instance,$sdkConfig = false) {
+    public function parseApiInstance($instance,$sdk_config_id = false) {
 
-
-        return array(
+        $data = array(
+            'payload'=>serialize($instance),
             'instance_id'=>$instance['InstanceId'],
-            'state'=>$instance['State']['Name'],
+            'state'=>$instance['State'],
             'private_ip'=>$instance['PrivateIpAddress'] || '0.0.0.0',
             'public_ip'=>$instance['PublicIpAddress'] || '0.0.0.0',
             'security_groups'=>$instance['SecurityGroups'],
             "image_id"=>$instance['ImageId'],
-            "sdk_config"=>$sdkConfig,
-            'payload'=>$instance,
-            'instance_state'=>$instance['State']
+            "aws_sdk_config_id"=>$sdk_config_id,
+            'instance_state'=>$instance['State']['Name']
         );
+
+        $dnsArray = explode(".", $instance['PrivateDnsName']);
+
+        $data['host_name'] = $dnsArray[0];
+
+        return $data;
+
+    }
+
+    private function insertInstance($instance) {
+
+        $this->create();
+
+        $chk = $this->find('first',array(
+            'conditions'=>array(
+                'Ec2Instance.instance_id'=>$instance['instance_id']
+            ),
+            'contain'=>false
+        ));
+
+        if(isset($chk['Ec2Instance']['id'])) {
+            $this->id = $chk['Ec2Instance']['id'];
+        }
+
+        $this->save($instance);
+
+        return $this->id;
 
     }
 

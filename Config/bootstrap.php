@@ -1,13 +1,20 @@
 <?php
 
-//load exceptions
-require_once __DIR__.'/../Error/exceptions.php';
+
+
+//plugin configuration
+Configure::write("AwsPlugin",array(
+    "tablePrefix"=>"aws_plugin_"
+));
 
 
 //setup the env for the plugin
 App::uses("AwsPluginLoad","Aws.Lib");
+//load exceptions
+require_once __DIR__.'/../Error/exceptions.php';
 
 AwsPluginLoad::load();
+
 
 /*
 To use the built in Auth component, set this property to true.
@@ -17,25 +24,13 @@ Actions are denied in the AwsAppController
 Configure::write("AwsPlugin.useAuth",false);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 # cache config
-
+// $engine = "File";
 // $engine = "Memcache";
-$engine = "File";
+$engine = "Redis";
 
-$memcache_servers = array(
-    '127.0.0.1:11211'
+$cache_servers = array(
+    '127.0.0.1:6379'
 );
 
 $eod = ((strtotime("tomorrow 00:00:00") - time()) / 60); //minutes until tomorrow
@@ -45,10 +40,10 @@ $prefix = gethostname()."-aws-";
 //trap for development machines etc.
 if(preg_match('/(centvm|ip-172-31-34-34|anotherhost)/',gethostname())) {
 
-    $memcache_servers = array(
-        '127.0.0.1:11211'
+    $cache_servers = array(
+        '127.0.0.1:6379'
     );
-    $engine = "Memcache";
+    $engine = "Redis";
 
 }
 
@@ -59,7 +54,7 @@ Cache::config('aws-1min', array(
     'path'=>CACHE,
     'serialize' => true,
     'duration' => "+1 Min",
-    'servers'=>$memcache_servers
+    'servers'=>$cache_servers
 ));
 
 
@@ -69,7 +64,7 @@ Cache::config('aws-5min', array(
     'path'=>CACHE,
     'serialize' => true,
     'duration' => "+1 Min",
-    'servers'=>$memcache_servers
+    'servers'=>$cache_servers
 ));
 
 Cache::config('aws-eod', array(
@@ -78,5 +73,5 @@ Cache::config('aws-eod', array(
     'path'=>CACHE,
     'serialize' => true,
     'duration' => "+{$eod} Min",
-    'servers'=>$memcache_servers
+    'servers'=>$cache_servers
 ));

@@ -36,7 +36,7 @@ class UserDataAuthenticate extends BaseAuthenticate {
 
                 case "launch_script":
 
-                    $file = ClassRegistry::init("Aws.AwsUserDataScript")->getLaunchScript($request->params['pass'][0]);
+                    $file = ClassRegistry::init("Aws.Ec2LaunchScript")->getLaunchScript($request->params['pass'][0]);
 
                 break;
                 case "file_download":

@@ -10,25 +10,25 @@ class Ec2Login extends AwsAppModel {
      * @param $options array
      * @return boolean
      */
-        public function beforeSave($options = array()) {
-            
-            if(empty($this->id)) {
+    public function beforeSave($options = array()) {
+        
+        if(empty($this->id)) {
 
-                if($this->data[$this->name]['auto_rsa'] == 1) {
+            if($this->data[$this->alias]['auto_rsa'] == 1) {
 
-                    $keys = $this->generateRsaKeys();
+                $keys = $this->generateRsaKeys();
 
-                    $this->data[$this->name]['private_key'] = $keys['private'];
-                    
-                    $this->data[$this->name]['public_key'] = $keys['public'];
-                }
-
+                $this->data[$this->alias]['private_key'] = $keys['private'];
+                
+                $this->data[$this->alias]['public_key'] = $keys['public'];
             }
 
-            return true;
         }
+
+        return true;
+    }
     
-    public function generateRsaKeys() {
+    public function generateRsaKeys() {    
 
         include('Crypt/RSA.php');
 

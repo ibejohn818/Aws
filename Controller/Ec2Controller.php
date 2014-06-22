@@ -18,39 +18,39 @@ class Ec2Controller extends AwsAppController {
 
     public function index() {
 
-        $options = array();
+        if(isset($this->request->params['named']['aws_sdk_config_id'])) {
 
-        if(isset($this->request->params['named']['TagKey']) && isset($this->request->params['named']['TagValue'])) {
+            $config_id = $this->request->params['named']['aws_sdk_config_id'];
 
-            $ids = $this->Ec2Instance->AwsTag->find("all",array(
-                "fields"=>array(
-                    'AwsTag.ec2_instance_id'
-                ),
+            $this->Ec2Instance->syncInstances($config_id);
+
+            $this->Paginator->settings = array(
                 'conditions'=>array(
-                    'AwsTag.tag_key'=>$this->request->params['named']['TagKey'],
-                    'AwsTag.tag_value'=>$this->request->params['named']['TagValue']
+                    'Ec2Instance.aws_sdk_config_id'=>$config_id
                 ),
-                'contain'=>false
-            ));
+                'contain'=>array(
+                    'AwsSdkConfig'
+                ),
+                'limit'=>250
+            );
 
-            $ids = Set::extract("/AwsTag/ec2_instance_id",$ids);
+            $instances = $this->Paginator->paginate("Ec2Instance");
 
-            $options['conditions']['Ec2Instance.id'] = $ids;
+            $this->set(compact("instances"));
 
         }
 
-        $instances = $this->Ec2Instance->getInstances($options);
-        
-        $this->set(compact("instances"));
+        if($this->request->is('ajax')) {
+            $this->render("/Elements/ec2-index");
+        }
+
+        $this->set("title_for_layout","AWS EC2 Instances");
 
     }
 
 
     public function security_group() {
         
-        $group = $this->Ec2Instance->get_security_group($this->request->params['named']['config'],$this->request->params['named']['security_group_id']);
-
-        $this->set(compact("group"));
 
     }
 
